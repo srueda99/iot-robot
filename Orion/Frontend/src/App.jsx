@@ -4,7 +4,7 @@ import "./App.css";
 export default function App() {
   const [speed, setSpeed] = useState(50);
   const [error, setError] = useState(null);
-  const api = "http://localhost:4040/status";
+  const api = "http://3.230.70.191:4040/status";
   const handleControl = async (command) => {
     try {
       console.log(`Comando: ${command}, Velocidad: ${speed}%`);
