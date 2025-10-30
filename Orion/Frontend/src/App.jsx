@@ -1,22 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./App.css";
 
 export default function App() {
   const [speed, setSpeed] = useState(50);
-  const api = "http://backend:4040/status";
-  const handleControl = (command) => {
-    console.log(`Comando: ${command}, Velocidad: ${speed}%`);
-    const response = fetch(api, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": "AK90YTFGHJ007WQ",
-      },
-      body: JSON.stringify({ cmd: command.toUpperCase(), speedness: speed }),
-    });
-    if (!response.ok) {
-      console.log("Fallo al enviar instrucciones");
-      console.log(response.statusText);
+  const [error, setError] = useState(null);
+  const api = "http://localhost:4040/status";
+  const handleControl = async (command) => {
+    try {
+      console.log(`Comando: ${command}, Velocidad: ${speed}%`);
+      const response = await fetch(api, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "AK90YTFGHJ007WQ",
+        },
+        body: JSON.stringify({ cmd: command.toUpperCase(), speedness: speed }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.text();
+      console.log("Respuesta:", data);
+      setError(null);
+    } catch (error) {
+      console.error("Error al enviar el comando:", error);
+      setError("Error al enviar el comando al servidor.");
     }
   };
 
