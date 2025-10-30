@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  # Servidor Node.js
+  backend:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    container_name: orion-api
+    ports:
+      - 4040:4040
+  # Servidor React.js
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: orion-frontend
+    ports:
+      - 5173:5173
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
