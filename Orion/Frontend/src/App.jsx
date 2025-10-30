@@ -16,6 +16,7 @@ export default function App() {
     });
     if (!response.ok) {
       console.log("Fallo al enviar instrucciones");
+      console.log(response.statusText);
     }
   };
 
