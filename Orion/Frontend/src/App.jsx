@@ -3,7 +3,7 @@ import "./App.css";
 
 export default function App() {
   const [speed, setSpeed] = useState(50);
-  const api = "http://localhost:4040/status";
+  const api = "http://backend:4040/status";
   const handleControl = (command) => {
     console.log(`Comando: ${command}, Velocidad: ${speed}%`);
     const response = fetch(api, {

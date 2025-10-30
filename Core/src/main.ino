@@ -34,7 +34,7 @@ const uint8_t MODE = 2;
 const char *kStaSsid = "UPBWiFi";
 const char *kStaPassword = "";
 
-const char *kServerUrl = "http://10.2.0.4:4040/Status";
+const char *kServerUrl = "http://54.89.254.108:4040/status";
 
 uint8_t sequenceCounter = 0;
 uint8_t currentLeftSpeed = 0;
