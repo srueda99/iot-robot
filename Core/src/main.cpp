@@ -16,6 +16,7 @@
 
 #ifndef CONFIG_RADIO_FREQ
 #define CONFIG_RADIO_FREQ 910.0
+#define CONFIG_RADIO_FREQ_SENSORS 915.0
 #endif
 #ifndef CONFIG_RADIO_OUTPUT_POWER
 #define CONFIG_RADIO_OUTPUT_POWER 17
@@ -45,6 +46,8 @@ unsigned long lastGetTime = 0;
 const long getInterval = 500;
 unsigned long lastWifiCheck = 0;
 const long wifiCheckInterval = 5000;
+unsigned long lastSensorCheck = 0;
+const long sensorCheckInterval = 100;
 
 bool wasConnected = false;
 bool lastCommandWasStop = true;
@@ -155,6 +158,39 @@ TankControl::Command parseCommand(const String &action)
   return TankControl::Command::Stop;
 }
 
+// Función para lectura de datos de los sensores vía LoRa 915 Mhz
+void checkSensorData()
+{
+  if (millis() - lastSensorCheck < sensorCheckInterval)
+    return;
+  lastSensorCheck = millis();
+
+  LoRa.setFrequency(CONFIG_RADIO_FREQ_SENSORS * 1000000);
+
+  int packetSize = LoRa.parsePacket();
+  if (packetSize)
+  {
+    Serial.print("SENSOR RX (915 MHz): ");
+
+    uint8_t buffer[256];
+    int len = LoRa.readBytes(buffer, packetSize);
+
+    Serial.printf("RSSI: %d | Len: %d | Data: ", LoRa.packetRssi(), len);
+
+    for (int i = 0; i < len; i++)
+    {
+      if (buffer[i] < 0x10)
+        Serial.print("0");
+      Serial.print(buffer[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+
+  LoRa.setFrequency(CONFIG_RADIO_FREQ * 1000000);
+}
+
+// Función para enviar un frame LoRa con comando y velocidades
 bool sendLoRaFrame(TankControl::Command cmd, uint8_t leftSpeed, uint8_t rightSpeed)
 {
   TankControl::ControlFrame frame;
@@ -191,6 +227,7 @@ bool sendLoRaFrame(TankControl::Command cmd, uint8_t leftSpeed, uint8_t rightSpe
   return ok;
 }
 
+// Función para enviar comando de parada si no hay conexión
 void sendStopCommand()
 {
   if (lastCommandWasStop && currentLeftSpeed == 0 && currentRightSpeed == 0)
@@ -209,6 +246,7 @@ void sendStopCommand()
   }
 }
 
+// Función para enviar ráfaga de prueba en espectro LoRa
 void sendSpectrumTestBurst()
 {
   static constexpr size_t kBurstSize = 192;
@@ -234,6 +272,7 @@ void sendSpectrumTestBurst()
   LoRa.receive();
 }
 
+// Función para inicializar el módulo LoRa
 bool beginLoRa()
 {
   SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN, RADIO_CS_PIN);
@@ -331,6 +370,7 @@ void handleWebCommand()
   server.send(200, "application/json", body);
 }
 
+// Función para realizar GET HTTP al servidor
 void performHttpGet()
 {
   if (WiFi.status() != WL_CONNECTED)
@@ -531,5 +571,6 @@ void loop()
         sendStopCommand();
       }
     }
+    checkSensorData();
   }
 }
