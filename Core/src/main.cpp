@@ -170,12 +170,11 @@ void checkSensorData()
   int packetSize = LoRa.parsePacket();
   if (packetSize)
   {
-    Serial.print("SENSOR RX (915 MHz): ");
-
     uint8_t buffer[256];
     int len = LoRa.readBytes(buffer, packetSize);
 
-    Serial.printf("RSSI: %d | Len: %d | Data: ", LoRa.packetRssi(), len);
+    Serial.printf("[SENSOR 915MHz] RSSI: %d dBm | Size: %d bytes | HEX: ",
+                  LoRa.packetRssi(), len);
 
     for (int i = 0; i < len; i++)
     {
@@ -184,7 +183,20 @@ void checkSensorData()
       Serial.print(buffer[i], HEX);
       Serial.print(" ");
     }
-    Serial.println();
+
+    Serial.print("| ASCII: \"");
+    for (int i = 0; i < len; i++)
+    {
+      if (buffer[i] >= 32 && buffer[i] <= 126)
+      {
+        Serial.print((char)buffer[i]);
+      }
+      else
+      {
+        Serial.print(".");
+      }
+    }
+    Serial.println("\"");
   }
 
   LoRa.setFrequency(CONFIG_RADIO_FREQ * 1000000);
