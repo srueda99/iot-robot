@@ -1,0 +1,49 @@
+name: Deploy production version
+on:
+  push:
+    branches: [prod]
+jobs:
+  build:
+    name: Deploy project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: SSH for previous scripts
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_ADDRESS }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_SERVER_KEY }}
+          port: 22
+          script: |
+            if sudo tmux has-session -t front 2>/dev/null; then
+              sudo tmux kill-session -t front
+            fi
+            if sudo tmux has-session -t api 2>/dev/null; then
+              sudo tmux kill-session -t api
+            fi
+            sudo rm -Rf /home/${{ secrets.SERVER_USER }}/Orion
+
+      - name: Copy files to server
+        uses: srueda99/scp-action@v13
+        with:
+          host: ${{ secrets.SERVER_ADDRESS }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_SERVER_KEY }}
+          origin: "./Orion/"
+          destination: "/home/${{ secrets.SERVER_USER }}/"
+
+      - name: Start servers
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_ADDRESS }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_SERVER_KEY }}
+          port: 22
+          script: |
+            npm install --prefix /home/${{ secrets.SERVER_USER }}/Orion/Frontend
+            npm install --prefix /home/${{ secrets.SERVER_USER }}/Orion/API
+            sudo tmux new-session -d -s front 'npm run dev -- --host 0.0.0.0 > /home/${{ secrets.SERVER_USER }}/Orion/Frontend/front.log 2>&1'
+            sudo tmux new-session -d -s api 'node index.js > /home/${{ secrets.SERVER_USER }}/Orion/API/api.log 2>&1'
