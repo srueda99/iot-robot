@@ -6,10 +6,10 @@ const port = process.env.PORT || '4040';
 const key = 'AK90YTFGHJ007WQ';
 var instruction = "STOP";
 var speed = 0;
-var latitud = 0;
-var longitud = 0;
-var temperatura = 0;
-var humedad = 0;
+var latitud = 6;
+var longitud = -75;
+var temperatura = 20;
+var humedad = 50;
 
 app.use(cors());
 app.use(express.json());
