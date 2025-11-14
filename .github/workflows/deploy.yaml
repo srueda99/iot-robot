@@ -45,5 +45,5 @@ jobs:
           script: |
             npm install --prefix /home/${{ secrets.SERVER_USER }}/Orion/Frontend
             npm install --prefix /home/${{ secrets.SERVER_USER }}/Orion/API
-            tmux new-session -d -s front 'npm run dev -- --host 0.0.0.0 > /home/${{ secrets.SERVER_USER }}/Orion/Frontend/front.log 2>&1'
-            tmux new-session -d -s api 'node index.js > /home/${{ secrets.SERVER_USER }}/Orion/API/api.log 2>&1'
+            sudo tmux new-session -d -s front 'npm run dev -- --host 0.0.0.0 > /home/${{ secrets.SERVER_USER }}/Orion/Frontend/front.log 2>&1'
+            sudo tmux new-session -d -s api 'node index.js > /home/${{ secrets.SERVER_USER }}/Orion/API/api.log 2>&1'
